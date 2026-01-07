@@ -3,22 +3,20 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-/**
- * Neural Lab 启动点
- * 在生产环境（Vercel）中，这些日志可以帮助我们通过控制台确认 React 是否成功挂载。
- */
-console.log("System: Initiating FocusQuest Neural Lab Protocol...");
+console.log("System: Starting FocusQuest Engine...");
 
 const rootElement = document.getElementById('root');
 
-if (!rootElement) {
-  console.error("Critical Failure: Root mount point missing from DOM.");
+if (rootElement) {
+  try {
+    const root = ReactDOM.createRoot(rootElement);
+    // 移除 StrictMode 以排查环境兼容性问题，并确保单次挂载成功
+    root.render(<App />);
+    console.log("System: Application mounted.");
+  } catch (err) {
+    console.error("System: Mount failed", err);
+    rootElement.innerHTML = `<div style="color:white; padding:20px;">Initialization Error: ${err.message}</div>`;
+  }
 } else {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-  console.log("System: Protocol Rendered Successfully.");
+  console.error("System: Target container #root not found.");
 }

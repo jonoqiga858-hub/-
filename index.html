@@ -8,15 +8,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script>
-        /**
-         * 生产环境部署关键修复：
-         * Vercel 环境下浏览器不具备 Node.js 的 process 变量。
-         * 此垫片必须在所有 JS 模块加载前执行，防止第三方库崩溃。
-         */
-        window.process = window.process || {
+        // 核心修复：在任何模块加载前注入完善的 process 垫片
+        window.process = { 
             env: { API_KEY: "" },
-            cwd: function() { return '/'; },
-            browser: true
+            browser: true,
+            cwd: function() { return '/'; }
+        };
+
+        // 错误诊断：如果 JS 加载失败，在屏幕上显示原因
+        window.onerror = function(msg, url, line, col, error) {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.innerHTML = `
+                    <div style="color: #f87171; padding: 20px; text-align: center; font-family: monospace;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">神经链路中断 (JS ERROR)</div>
+                        <div style="font-size: 10px; opacity: 0.7;">${msg}</div>
+                        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #334155; color: white; border: none; border-radius: 8px; cursor: pointer;">尝试重连</button>
+                    </div>
+                `;
+            }
+            return false;
         };
     </script>
     <style>
@@ -26,7 +38,7 @@
             color: #f8fafc;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            overflow: hidden; /* 防止初始化时的滚动条闪烁 */
+            overflow-x: hidden;
         }
         @keyframes glitch {
           0% { transform: translate(0); }
@@ -47,7 +59,6 @@
             align-items: center;
             justify-content: center;
             background: #020617;
-            z-index: 9999;
         }
         .pulse-text {
             color: #6366f1;
@@ -58,6 +69,7 @@
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes slide { from { left: -30%; } to { left: 100%; } }
     </style>
     <script type="importmap">
 {
@@ -74,14 +86,13 @@
 </head>
 <body>
     <div id="root">
-        <!-- 初始加载 UI：如果 JS 运行正常，此处会被 React 替换 -->
         <div id="loader">
-            <div className="pulse-text">CONNECTING TO NEURAL HUB...</div>
-            <div style="margin-top: 20px; width: 100px; height: 1px; background: rgba(99, 102, 241, 0.2); position: relative;">
+            <div class="pulse-text">CONNECTING TO NEURAL HUB...</div>
+            <div style="margin-top: 20px; width: 100px; height: 1px; background: rgba(99, 102, 241, 0.2); position: relative; overflow: hidden;">
                 <div style="position: absolute; height: 100%; background: #6366f1; width: 30%; animation: slide 1.5s infinite linear;"></div>
             </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #334155; font-family: monospace;">INITIALIZING PROTOCOLS...</div>
         </div>
     </div>
-    <style>@keyframes slide { from { left: -30%; } to { left: 100%; } }</style>
 </body>
 </html>
