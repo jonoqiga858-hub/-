@@ -1,22 +1,29 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// 安全获取 API Key，防止 process 未定义导致的崩溃
-const apiKey = typeof process !== 'undefined' && process.env?.API_KEY ? process.env.API_KEY : "";
-const ai = new GoogleGenAI({ apiKey });
+// 辅助函数：安全获取 AI 实例
+function getAIInstance() {
+  const apiKey = typeof process !== 'undefined' && process.env?.API_KEY ? process.env.API_KEY : "";
+  if (!apiKey) {
+    console.warn("Gemini API Key is missing. Using offline mode.");
+    return null;
+  }
+  return new GoogleGenAI({ apiKey });
+}
 
 const CHINESE_NUMBERS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
 
 /**
- * 获取游戏结束后的神经反馈（鼓励语）
+ * 获取游戏结束后的神经反馈
  */
 export async function getEncouragement(gameName: string, score: number) {
-  if (!apiKey) return "同步成功，专注于下个协议。";
+  const ai = getAIInstance();
+  if (!ai) return "同步成功，专注于下个协议。";
+  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `用户完成了ADHD专注训练“${gameName}”，得分：${score}。
-      给出12字以内的专业、高能量、教练式的反馈（中文）。`,
+      contents: `用户完成了ADHD专注训练“${gameName}”，得分：${score}。给出12字以内的专业、高能量、教练式的反馈（中文）。`,
       config: { temperature: 0.8 }
     });
     return response.text?.trim() || "神经反馈已优化，表现出色。🚀";
@@ -29,13 +36,14 @@ export async function getEncouragement(gameName: string, score: number) {
  * 生成多维注意力报告
  */
 export async function getAttentionAnalysis(history: { gameType: string, score: number }[]) {
-  if (!apiKey) return "无法生成云端报告。";
+  const ai = getAIInstance();
+  if (!ai) return "无法生成云端报告。当前处于离线增强模式。";
+  
   try {
     const summary = history.map(h => `${h.gameType}: ${h.score}`).join(', ');
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `分析以下数据：${summary}。
-      作为ADHD专家，给出150字以内的专业分析报告，包含注意力稳定性和生活建议。`,
+      contents: `分析以下数据：${summary}。作为ADHD专家，给出150字以内的专业分析报告，包含注意力稳定性和生活建议。`,
       config: { temperature: 0.7 }
     });
     return response.text || "数据正在同步，请继续保持。";
@@ -52,7 +60,8 @@ export async function generateAuditoryTask() {
   const numbers = Array.from({ length: count }, () => Math.floor(Math.random() * 10));
   const textToSpeak = numbers.map(n => CHINESE_NUMBERS[n]).join(" ");
   
-  if (!apiKey) return { base64Audio: null, correctSequence: numbers };
+  const ai = getAIInstance();
+  if (!ai) return { base64Audio: null, correctSequence: numbers };
 
   try {
     const response = await ai.models.generateContent({
@@ -75,7 +84,7 @@ export async function generateAuditoryTask() {
     return { base64Audio, correctSequence: numbers };
   } catch (error) {
     console.error("TTS API Error:", error);
-    return null;
+    return { base64Audio: null, correctSequence: numbers };
   }
 }
 
