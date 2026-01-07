@@ -1,14 +1,17 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-// 辅助函数：安全获取 AI 实例
-function getAIInstance() {
-  const apiKey = typeof process !== 'undefined' && process.env?.API_KEY ? process.env.API_KEY : "";
-  if (!apiKey) {
-    console.warn("Gemini API Key is missing. Using offline mode.");
-    return null;
+/**
+ * 辅助函数：安全获取 API KEY
+ * 优先从 window.process.env 获取，这是在 index.html 中定义的 shim
+ */
+function getSafeApiKey(): string {
+  try {
+    // @ts-ignore
+    return (window.process?.env?.API_KEY) || (process?.env?.API_KEY) || "";
+  } catch (e) {
+    return "";
   }
-  return new GoogleGenAI({ apiKey });
 }
 
 const CHINESE_NUMBERS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
@@ -17,8 +20,11 @@ const CHINESE_NUMBERS = ['零', '一', '二', '三', '四', '五', '六', '七',
  * 获取游戏结束后的神经反馈
  */
 export async function getEncouragement(gameName: string, score: number) {
-  const ai = getAIInstance();
-  if (!ai) return "同步成功，专注于下个协议。";
+  const apiKey = getSafeApiKey();
+  if (!apiKey) return "同步成功，专注于下个协议。";
+  
+  // Create a new instance right before use to ensure latest API Key.
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -36,8 +42,10 @@ export async function getEncouragement(gameName: string, score: number) {
  * 生成多维注意力报告
  */
 export async function getAttentionAnalysis(history: { gameType: string, score: number }[]) {
-  const ai = getAIInstance();
-  if (!ai) return "无法生成云端报告。当前处于离线增强模式。";
+  const apiKey = getSafeApiKey();
+  if (!apiKey) return "无法生成云端报告。当前处于离线增强模式。";
+  
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const summary = history.map(h => `${h.gameType}: ${h.score}`).join(', ');
@@ -60,8 +68,10 @@ export async function generateAuditoryTask() {
   const numbers = Array.from({ length: count }, () => Math.floor(Math.random() * 10));
   const textToSpeak = numbers.map(n => CHINESE_NUMBERS[n]).join(" ");
   
-  const ai = getAIInstance();
-  if (!ai) return { base64Audio: null, correctSequence: numbers };
+  const apiKey = getSafeApiKey();
+  if (!apiKey) return { base64Audio: null, correctSequence: numbers };
+
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
     const response = await ai.models.generateContent({
