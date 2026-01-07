@@ -1,0 +1,7 @@
+{
+  "name": "FocusQuest: Neural Lab Pro",
+  "description": "Advanced executive function training for adult ADHD. Focused on inhibition, working memory, and categorization logic.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
