@@ -1,11 +1,12 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { GameType } from './types';
 import { getEncouragement, getAttentionAnalysis } from './services/geminiService';
 import ColorClash from './components/games/ColorClash';
 import GridMemory from './components/games/GridMemory';
 import SchulteTable from './components/games/SchulteTable';
 import RuleCategorization from './components/games/RuleCategorization';
+import AuditoryTraining from './components/games/AuditoryTraining';
 import ContextMemory from './components/games/ContextMemory';
 
 const GAME_METADATA: Record<GameType, { title: string, icon: string, desc: string }> = {
@@ -13,6 +14,7 @@ const GAME_METADATA: Record<GameType, { title: string, icon: string, desc: strin
   [GameType.GRID_MEMORY]: { title: '空间记忆', icon: '🧩', desc: '增强工作记忆与序列复现' },
   [GameType.SCHULTE_TABLE]: { title: '视觉搜索', icon: '🔢', desc: '提升专注力稳定性' },
   [GameType.RULE_CATEGORIZATION]: { title: '逻辑分类', icon: '⚖️', desc: '多维规则判断执行' },
+  [GameType.AUDITORY_ATTENTION]: { title: '听觉信号', icon: '🎧', desc: '强干扰下的信息提取' },
   [GameType.CONTEXT_MEMORY]: { title: '情景联想', icon: '📖', desc: '建立叙事联想巩固记忆' },
 };
 
@@ -82,6 +84,7 @@ const App: React.FC = () => {
       case GameType.GRID_MEMORY: return <GridMemory onFinish={handleGameFinish} difficulty={streak} />;
       case GameType.SCHULTE_TABLE: return <SchulteTable onFinish={handleGameFinish} difficulty={streak} />;
       case GameType.RULE_CATEGORIZATION: return <RuleCategorization onFinish={handleGameFinish} difficulty={streak} />;
+      case GameType.AUDITORY_ATTENTION: return <AuditoryTraining onFinish={handleGameFinish} difficulty={streak} />;
       case GameType.CONTEXT_MEMORY: return <ContextMemory onFinish={handleGameFinish} difficulty={streak} />;
       default: return null;
     }
@@ -94,7 +97,7 @@ const App: React.FC = () => {
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping" />
-            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">NeuroFocus Protocol v5.1</span>
+            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em]">NeuroFocus Protocol v5.0</span>
           </div>
           <span className="text-[9px] text-slate-600 font-mono mt-0.5 tracking-tighter">ENVIRONMENT: ADULT_ADHD // SYNC: ACTIVE</span>
         </div>
